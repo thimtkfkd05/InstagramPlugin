@@ -63,7 +63,8 @@ static NSString *InstagramId = @"com.burbn.instagram";
         NSLog(@"open in instagram");
         
         NSData *imageObj = [[NSData alloc] initWithBase64EncodedString:objectAtIndex0 options:0];
-        
+	
+        ALAssetsLibrary *library = [[ALAssetsLibrary alloc] init];
 	[library writeImageDataToSavedPhotosAlbum:imageObj metadata:nil completionBlock:^(NSURL *assetURL, NSError *error) {
             NSURL *instagramURL = [NSURL URLWithString:
                                   [NSString stringWithFormat:@"instagram://library?AssetPath=%@&InstagramCaption=%@",
