@@ -22,6 +22,8 @@
     WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#import <AssetsLibrary/AssetsLibrary.h>
+
 #import <Cordova/CDV.h>
 #import "CDVInstagramPlugin.h"
 
@@ -61,19 +63,15 @@ static NSString *InstagramId = @"com.burbn.instagram";
         NSLog(@"open in instagram");
         
         NSData *imageObj = [[NSData alloc] initWithBase64EncodedString:objectAtIndex0 options:0];
-        NSString *tmpDir = NSTemporaryDirectory();
-        NSString *path = [tmpDir stringByAppendingPathComponent:@"instagram.ig"];
         
-        [imageObj writeToFile:path atomically:true];
-        
-        self.interactionController = [UIDocumentInteractionController interactionControllerWithURL:[NSURL fileURLWithPath:path]];
-        self.interactionController .UTI = @"com.instagram.photo";
-        if (caption) {
-            self.interactionController .annotation = @{@"InstagramCaption" : caption};
-        }
-        self.interactionController .delegate = self;
-        [self.interactionController presentOpenInMenuFromRect:CGRectZero inView:self.webView animated:YES];
-        
+	[library writeImageDataToSavedPhotosAlbum:imageObj metadata:nil completionBlock:^(NSURL *assetURL, NSError *error) {
+            NSURL *instagramURL = [NSURL URLWithString:
+                                  [NSString stringWithFormat:@"instagram://library?AssetPath=%@&InstagramCaption=%@",
+                                  [[assetURL absoluteString] stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet alphanumericCharacterSet]],
+                                  [caption stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet alphanumericCharacterSet]]]];
+
+            [[UIApplication sharedApplication] openURL:instagramURL];
+        }];
     } else {
         result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageToErrorObject:1];
         [self.commandDelegate sendPluginResult:result callbackId: self.callbackId];
